@@ -21,6 +21,8 @@ An n8n workflow that triages incoming process-automation requests for an OpEx / 
 
 ![Rejection email](screenshots/03-rejection-email.png)
 
+![Request log dashboard in Google Sheets](screenshots/02-dashboard.png)
+
 ## Decision rules
 
 - **In scope:** recurring, rule-based, digital process (data transfer, reporting, notifications, approvals, document processing, syncs between systems).
@@ -56,4 +58,22 @@ I wrote 25 test requests myself (recurring processes, one-off requests, incomple
 **Caveats:**
 - Two borderline requests (CRM → billing, intercompany invoice check) were not re-run because of the Gemini API quota. Their expected labels were set before the critical-gaps criterion existed; under the new criterion they are expected to flip. Result: TODO.
 - The 18 requests that were correct on v1 were not re-run on v2, so regression is not excluded.
-- The criterion for a "critical gap" was introduced after the
+- The criterion for a "critical gap" was introduced after the first measurement, so v2 results are not an independent test.
+
+## Known limitations
+
+- For out-of-scope requests `data_complete` is logged as `TRUE` (by design of the routing).
+- The minimum-value threshold (1 annual hour) affects only the logged `decision`, not the routing.
+- If Gemini returns no questions, the clarification email has an empty list.
+- Test set is small and synthetic.
+
+## Possible next steps
+
+- Re-run the two borderline requests and the 18 previously correct ones on v2.
+- Add default questions for missing frequency and duration to the clarification email.
+- Route by the final `decision` field instead of two separate checks.
+- Add a larger test set and an evaluation sheet.
+
+## License
+
+MIT
