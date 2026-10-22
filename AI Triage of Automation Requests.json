@@ -1,0 +1,976 @@
+{
+  "name": "AI Triage of Automation Requests",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "OpEx Incoming Requests",
+        "formDescription": "This form is made for sending incoming requests for OpEx Process Automation Team",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Process Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Issue Description",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Frequency (times/ month)",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Minutes per execution",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Number of people",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Systems used"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "290018d6-463c-4bf1-9fe1-633c948c78b3",
+      "name": "On form submission"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "75bda2a1-e22e-44aa-8c58-1e65975d985c",
+              "name": "author",
+              "value": "={{ $json.Name }}",
+              "type": "string"
+            },
+            {
+              "id": "1d735a6e-34f1-48f7-835b-46e1c1aef73e",
+              "name": "email",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "9169caa0-7e24-4534-b5bf-65bba062a409",
+              "name": "process",
+              "value": "={{ $json['Process Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "f87d35eb-908f-4871-8141-4a5990e543ab",
+              "name": "description",
+              "value": "={{ $json['Issue Description'] }}",
+              "type": "string"
+            },
+            {
+              "id": "cda0d9d1-2a46-4c5d-9763-4a5249b67cea",
+              "name": "freq_month",
+              "value": "={{ $json['Frequency (times/ month)'] }}",
+              "type": "number"
+            },
+            {
+              "id": "e1707a43-2237-4255-af2b-f5850201bd2e",
+              "name": "minutes",
+              "value": "={{ $json['Minutes per execution'] }}",
+              "type": "number"
+            },
+            {
+              "id": "f92ea348-0459-41b5-aa40-64ff81c644c8",
+              "name": "people",
+              "value": "={{ $json['Number of people'] }}",
+              "type": "number"
+            },
+            {
+              "id": "cffe93af-e8d2-49e4-b9bb-e9cac57e416b",
+              "name": "systems",
+              "value": "={{ $json['Systems used'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "cd9784e0-6ce3-4fb8-8cc6-a5d73709b6d7",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1887837c-06de-4965-8eb6-5fe5a3681da1",
+              "leftValue": "={{ $json.data_complete }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "fd4fb4b4-6e19-40bd-9e7d-f5117a184a9b",
+      "name": "Data complete?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "de97d096-f63a-476d-a1b6-90d21fa7adf5",
+              "leftValue": "={{ $json.in_scope }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1424,
+        -112
+      ],
+      "id": "bc43188b-6c36-4aa3-9544-78965d63788e",
+      "name": "In scope?"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "Gemini 3 Flash Preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Process: {{ $json.process }}\nDescription: {{ $json.description }}\nFrequency per month: {{ $json.freq_month }}\nMinutes per execution: {{ $json.minutes }}\nPeople involved: {{ $json.people }}\nSystems: {{ $json.systems }}"
+            },
+            {
+              "content": "You are an assistant that triages internal process-automation requests.\nAnalyze the request and return ONLY a JSON object (no markdown).\n\nSCOPE\n- in_scope = true: recurring, rule-based, digital process (data transfer, reporting, notifications, approvals, document processing, syncs between systems).\n- in_scope = false: one-off projects, purchases, hardware/infrastructure incidents, bug reports, strategic or HR-policy decisions, work based on human negotiation or judgment, office/facilities matters.\n- Decide scope FIRST. Missing details never make a request out of scope, and an out-of-scope request never needs clarification.\n\nCRITICAL GAPS (the only reason to mark data as incomplete)\nList in \"critical_gaps\" ONLY items from this closed list that cannot be inferred from the form:\n 1. \"what_is_done\" - the description does not say what is done manually, only a wish (\"automate it\", \"make it faster\").\n 2. \"systems\" - no system or tool involved is named or inferable.\n 3. \"frequency\" - frequency per month is missing or 0.\n 4. \"duration\" - minutes per execution is missing or 0.\nIf the description, systems, frequency and duration are enough to understand the process, critical_gaps MUST be an empty array.\nDo not invent numbers; if frequency or duration is missing, return 0.\n\nNOT critical (never put into critical_gaps)\nAPI availability, file formats, authentication/MFA, storage location, field mapping, matching rules, access rights. These are implementation details for the analysis stage. Put them (max 3) into \"questions_for_author\" as \"nice to know\"; they do not affect the decision.\n\nCONTRADICTIONS\nIf the description and the \"systems\" field clearly contradict each other (a different target system, a different channel), add \"systems\" to critical_gaps and ask one question about it.\n\nOUTPUT JSON\n{\n \"category\": \"reporting|data_sync|notification|approval|workflow|document_processing|other\",\n \"automation_type\": \"integration|RPA|workflow|AI|not_automatable\",\n \"complexity\": \"Low|Medium|High\",\n \"priority\": \"Low|Medium|High\",\n \"in_scope\": true|false,\n \"scope_reason\": \"one sentence\",\n \"summary\": \"one sentence in English\",\n \"critical_gaps\": [],\n \"questions_for_author\": []\n}",
+              "role": "model"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b6ff8bb1-6ac8-4fbf-82c4-f7834165f92a",
+      "name": "AI: parse request",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const MIN_ANNUAL_HOURS = 1;\n\nconst f = $('Edit Fields').item.json;\n\nlet raw = $json?.content?.parts?.[0]?.text ?? $json?.text ?? $json?.output ?? '';\nraw = String(raw).replace(/```json|```/g, '').trim();\nlet g = {};\ntry { g = JSON.parse(raw); } catch (e) { g = {}; }\n\nconst freq = Number(f.freq_month) || 0;\nconst mins = Number(f.minutes) || 0;\nconst desc = String(f.description || '').trim();\nconst sys  = String(f.systems || '').trim().toLowerCase();\n\nconst monthly = Math.round(freq * mins / 60 * 10) / 10;\nconst annual  = Math.round(monthly * 12);\nconst inScope = g.in_scope === true || g.in_scope === 'true';\n\nconst gaps = new Set(Array.isArray(g.critical_gaps) ? g.critical_gaps : []);\nif (inScope) {\n  if (freq <= 0) gaps.add('frequency');\n  if (mins <= 0) gaps.add('duration');\n  if (desc.length < 40) gaps.add('what_is_done');\n  if (!sys || ['-', 'none', 'n/a', 'нет'].includes(sys)) gaps.add('systems');\n}\nconst dataComplete = !inScope || gaps.size === 0;\n\nlet decision;\nif (!inScope) decision = 'Rejected';\nelse if (!dataComplete) decision = 'Needs clarification';\nelse if (annual < MIN_ANNUAL_HOURS) decision = 'Rejected';\nelse decision = 'Accepted';\n\nreturn { json: {\n  ...f,\n  submitted_at: f.submittedAt || new Date().toISOString(),\n  category: g.category, automation_type: g.automation_type,\n  complexity: g.complexity, priority: g.priority,\n  summary: g.summary, scope_reason: g.scope_reason,\n  questions_for_author: JSON.stringify(g.questions_for_author || []),\n  monthly_hours: monthly, annual_hours: annual,\n  in_scope: inScope, data_complete: dataComplete,\n  missing_info: JSON.stringify([...gaps]),\n  decision\n} };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        0
+      ],
+      "id": "3378de75-a27f-4888-8c09-410e3339c6bb",
+      "name": "Calculate value"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "=Your automation request \"{{ $json.process }}\": decision",
+        "emailType": "text",
+        "message": "=Hello {{ $json.author }},\n\nThank you for your request. Unfortunately, we cannot take it into the automation backlog at this time.\n\nReason: {{ $json.scope_reason }}\n\nYou are welcome to resubmit the request with additional details.\n\nOpEx Process Automation Team",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1648,
+        16
+      ],
+      "id": "2ab293c2-85f2-4af1-adb7-3bde454c7167",
+      "name": "Email rejection",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "OpEx Incoming Requests",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 728352436,
+          "mode": "list",
+          "cachedResultName": "Backlog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=728352436"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "process",
+              "displayName": "process",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "author",
+              "displayName": "author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "automation_type",
+              "displayName": "automation_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "complexity",
+              "displayName": "complexity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "monthly_hours",
+              "displayName": "monthly_hours",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "annual_hours",
+              "displayName": "annual_hours",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "systems",
+              "displayName": "systems",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "freq_month",
+              "displayName": "freq_month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "minutes",
+              "displayName": "minutes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "people",
+              "displayName": "people",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "in_scope",
+              "displayName": "in_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scope_reason",
+              "displayName": "scope_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "missing_info",
+              "displayName": "missing_info",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "questions_for_author",
+              "displayName": "questions_for_author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data_complete",
+              "displayName": "data_complete",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "decision",
+              "displayName": "decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1648,
+        -208
+      ],
+      "id": "2314caf1-3a9a-4229-9f58-db38849d0590",
+      "name": "Create backlog item",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "AI triage of automation requests: Form → LLM analysis → value calculation → route (clarify / reject / backlog) → log",
+        "height": 80,
+        "width": 800,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -352
+      ],
+      "id": "14c76aeb-f335-4cd8-a2f3-9b7972f2ada8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json.email }}",
+        "subject": "=Your automation request \"{{ $json.process }}\" needs more details",
+        "emailType": "text",
+        "message": "=Hello {{ $json.author }},\n\nThank you for your request. To assess it we need a few more details:\n\n{{ JSON.parse($json.questions_for_author).map((q, i) => (i + 1) + '. ' + q).join('\\n') }}\n\nPlease reply to this email with the answers.\n\nOpEx Process Automation Team",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        160
+      ],
+      "id": "b8c1c341-546f-4a80-8494-0e54f1ef377e",
+      "name": "Email to author (questions)",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "OpEx Incoming Requests",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1841874954,
+          "mode": "list",
+          "cachedResultName": "OpEx IR",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=1841874954"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "process",
+              "displayName": "process",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "author",
+              "displayName": "author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "automation_type",
+              "displayName": "automation_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "complexity",
+              "displayName": "complexity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "monthly_hours",
+              "displayName": "monthly_hours",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "annual_hours",
+              "displayName": "annual_hours",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "in_scope",
+              "displayName": "in_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data_complete",
+              "displayName": "data_complete",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "decision",
+              "displayName": "decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "systems",
+              "displayName": "systems",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "freq_month",
+              "displayName": "freq_month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "minutes",
+              "displayName": "minutes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "people",
+              "displayName": "people",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scope_reason",
+              "displayName": "scope_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "missing_info",
+              "displayName": "missing_info",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "questions_for_author",
+              "displayName": "questions_for_author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "finishReason",
+              "displayName": "finishReason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "index",
+              "displayName": "index",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "critical_gaps",
+              "displayName": "critical_gaps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1008,
+        -128
+      ],
+      "id": "cb6527d2-e759-4cf7-a685-919b611487ca",
+      "name": "Log request (Google Sheets)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI: parse request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data complete?": {
+      "main": [
+        [
+          {
+            "node": "In scope?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email to author (questions)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "In scope?": {
+      "main": [
+        [
+          {
+            "node": "Create backlog item",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: parse request": {
+      "main": [
+        [
+          {
+            "node": "Calculate value",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate value": {
+      "main": [
+        [
+          {
+            "node": "Log request (Google Sheets)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Data complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log request (Google Sheets)": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
