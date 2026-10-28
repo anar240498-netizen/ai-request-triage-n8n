@@ -8,6 +8,39 @@ An n8n workflow that triages incoming process-automation requests for an OpEx / 
 
 ![Process diagram (BPMN)](docs/AI%20Triage%20of%20Automation%20Requests.png)
 
+**Sequence diagram:**
+
+```mermaid
+sequenceDiagram
+autonumber
+actor U as Requester (client)
+participant F as n8n Form (Web UI)
+participant N as n8n (server, workflow)
+participant G as Gemini API
+participant S as Google Sheets API
+participant M as Gmail API
+U->>F: Fills in the form (name, email, process, description, frequency, minutes, people, systems)
+F->>N: HTTP POST (On form submission), payload
+N-->>F: 200 OK (form accepted)
+N->>G: POST /generateContent (HTTPS, JSON: prompt + request data)
+G-->>N: 200 OK (JSON: category, automation_type, complexity, priority, in_scope, scope_reason, summary, critical_gaps, questions_for_author)
+Note over N: Code node Calculate value:<br/>monthly_hours = freq × min ÷ 60<br/>annual_hours = monthly × 12<br/>re-check of critical gaps<br/>decision: Rejected / Needs clarification / Accepted
+N->>S: POST append row (OpEx IR, request log), OAuth2, JSON
+S-->>N: 200 OK
+alt Data incomplete (Data complete? = false)
+N->>M: POST send message (OAuth2): email to author with numbered questions
+M-->>N: 200 OK
+M-->>U: Email: clarifying questions
+else Out of scope (In scope? = false)
+N->>M: POST send message (OAuth2): rejection email with reason
+M-->>N: 200 OK
+M-->>U: Email: rejection
+else In scope and data complete
+N->>S: POST append row (Backlog), OAuth2, JSON
+S-->>N: 200 OK
+end
+```
+
 ## What it does
 
 1. **Form** (`On form submission`): name, email, process name, issue description, frequency per month, minutes per execution, number of people, systems used.
