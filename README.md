@@ -4,11 +4,23 @@ An n8n workflow that triages incoming process-automation requests for an OpEx / 
 
 **Flow:** form → Gemini analysis → value calculation → routing (clarify / reject / backlog) → email + Google Sheets log
 
+## Diagrams
+
+### Workflow canvas (n8n)
+
+The workflow as implemented in n8n: nodes and connections.
+
 ![Workflow canvas](screenshots/01-workflow-canvas.png)
+
+### Process diagram (BPMN)
+
+Business process view: who does what and where the decision gates are.
 
 ![Process diagram (BPMN)](docs/AI%20Triage%20of%20Automation%20Requests.png)
 
-**Sequence diagram:**
+### Sequence diagram
+
+Technical view: HTTP/REST calls with JSON payloads between the requester, n8n, Gemini, Google Sheets and Gmail.
 
 ```mermaid
 sequenceDiagram
