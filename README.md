@@ -6,6 +6,8 @@ An n8n workflow that triages incoming process-automation requests for an OpEx / 
 
 ![Workflow canvas](screenshots/01-workflow-canvas.png)
 
+![Process diagram (BPMN)](docs/AI%20Triage%20of%20Automation%20Requests.png)
+
 ## What it does
 
 1. **Form** (`On form submission`): name, email, process name, issue description, frequency per month, minutes per execution, number of people, systems used.
